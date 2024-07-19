@@ -1,0 +1,96 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+version: '3.8'
+
+services:
+  server:
+    build: .
+    ports:
+      - "5342:5342"
+    volumes:
+      - /Users/hamzamandvi/code/pipeline/ETL_Pipeline:/app
+    depends_on:
+      - postgres
+    # environment:
+     # - database=lightrfp_db
+     # - host=postgres #etl_pipeline-postgres-1 is the alternate one
+     # - user=postgres
+     # - password=123456
+     # - port=5432
+    networks:
+      - etl_pipeline_network
+
+  postgres:
+    container_name: etl_pipeline-postgres-1
+    image: postgres:14
+    environment:
+      POSTGRES_DB: lightrfp_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - /Users/hamzamandvi/code/pipeline/ETL_Pipeline/postgres-data:/var/lib/postgresql/data
+    networks:
+      - etl_pipeline_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: amirhamzamandvi@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
+      PGADMIN_CONFIG_ENHANCED_SECURITY: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - /Users/hamzamandvi/code/pipeline/ETL_Pipeline/pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres  # Ensure PostgreSQL container starts before PgAdmin
+    networks:
+      - etl_pipeline_network
+
+networks:
+  etl_pipeline_network:
+    driver: bridge
+
+# The commented out section below is an example of how to define a PostgreSQL
+# database that your application can use. depends_on tells Docker Compose to
+# start the database before your application. The db-data volume persists the
+# database data between container restarts. The db-password secret is used
+# to set the database password. You must create db/password.txt and add
+# a password of your choosing to it before running docker compose up.
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#   db:
+#     image: postgres
+#     restart: always
+#     user: postgres
+#     secrets:
+#       - db-password
+#     volumes:
+#       - db-data:/var/lib/postgresql/data
+#     environment:
+#       - POSTGRES_DB=example
+#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+#     expose:
+#       - 5432
+#     healthcheck:
+#       test: [ "CMD", "pg_isready" ]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+# volumes:
+#   db-data:
+# secrets:
+#   db-password:
+#     file: db/password.txt
+
+
